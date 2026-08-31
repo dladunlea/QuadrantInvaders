@@ -24,7 +24,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 40px 10px;
+            padding: 30px 10px;
         }
 
         #gameContainer {
@@ -33,7 +33,7 @@
             max-width: 1200px;
             width: 100%;
             padding: 5px;
-            max-height: calc(100vh - 80px);
+            max-height: calc(100vh - 60px);
         }
 
         #gameArea {
@@ -306,16 +306,27 @@
             animation: flashRed 0.3s;
         }
 
+        /* Tablets (iPad, etc) */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            body {
+                padding: 25px 15px;
+            }
+
+            #gameContainer {
+                max-height: calc(100vh - 50px);
+            }
+        }
+
         /* Mobile Portrait */
         @media (max-width: 768px) and (orientation: portrait) {
             body {
-                padding: 30px 10px;
+                padding: 25px 10px;
             }
 
             #gameContainer {
                 flex-direction: column;
                 gap: 10px;
-                max-height: calc(100vh - 60px);
+                max-height: calc(100vh - 50px);
             }
             
             #gameArea {
@@ -364,12 +375,12 @@
         /* Mobile Landscape */
         @media (max-width: 900px) and (orientation: landscape) {
             body {
-                padding: 20px 10px;
+                padding: 15px 10px;
             }
 
             #gameContainer {
                 gap: 10px;
-                max-height: calc(100vh - 40px);
+                max-height: calc(100vh - 30px);
             }
 
             #controlPanel {
@@ -389,7 +400,6 @@
             .life {
                 width: 22px;
                 height: 22px;
-                gap: 10px;
             }
 
             #livesContainer {
@@ -422,17 +432,6 @@
                 padding: 10px;
                 font-size: 16px;
                 margin: 5px 0;
-            }
-        }
-
-        /* Tablets */
-        @media (min-width: 768px) and (max-width: 1024px) {
-            body {
-                padding: 30px 15px;
-            }
-
-            #gameContainer {
-                max-height: calc(100vh - 60px);
             }
         }
 
@@ -478,11 +477,49 @@
         /* Extra short landscape */
         @media (max-height: 600px) and (orientation: landscape) {
             body {
-                padding: 15px 10px;
+                padding: 10px;
             }
 
             #gameContainer {
-                max-height: calc(100vh - 30px);
+                max-height: calc(100vh - 20px);
+            }
+
+            .panel-section {
+                padding: 8px;
+            }
+
+            .section-title {
+                font-size: 12px;
+                margin-bottom: 6px;
+            }
+
+            .life {
+                width: 20px;
+                height: 20px;
+            }
+
+            #livesContainer {
+                gap: 8px;
+            }
+
+            .score-value {
+                font-size: 20px;
+            }
+
+            .score-item {
+                margin: 4px 0;
+            }
+
+            #questionText {
+                font-size: 13px;
+                margin-bottom: 10px;
+                min-height: 40px;
+            }
+
+            .answer-btn {
+                padding: 8px;
+                font-size: 14px;
+                margin: 4px 0;
             }
         }
     </style>
@@ -835,10 +872,7 @@
 
         // Spawn new meteor
         function spawnMeteor() {
-            gameState.meteor = new Meteor();
-            updateQuestion();
-        }
-
+            gameState.meteor = new
         // Answer question
         function answerQuestion(isPositive) {
             if (!gameState.gameRunning || !gameState.meteor) return;
