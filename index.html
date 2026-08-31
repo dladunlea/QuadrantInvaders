@@ -872,7 +872,10 @@
 
         // Spawn new meteor
         function spawnMeteor() {
-            gameState.meteor = new
+            gameState.meteor = new Meteor();
+            updateQuestion();
+        }
+
         // Answer question
         function answerQuestion(isPositive) {
             if (!gameState.gameRunning || !gameState.meteor) return;
@@ -885,7 +888,7 @@
             const buttons = document.querySelectorAll('.answer-btn');
             
             if (isPositive === correctAnswer) {
-                // Correct answer - reduced speed increase from 1.15 to 1.05
+                // Correct answer
                 gameState.score += 10;
                 gameState.speedMultiplier *= 1.05;
                 document.getElementById('currentScore').textContent = gameState.score;
@@ -991,9 +994,7 @@
             function showCount() {
                 if (count > 0) {
                     countdownEl.textContent = count;
-                    // Force reflow to restart animation
                     countdownEl.style.animation = 'none';
-                    // Use requestAnimationFrame to ensure the browser processes the style change
                     requestAnimationFrame(() => {
                         requestAnimationFrame(() => {
                             countdownEl.style.animation = 'countdownPulse 1s';
@@ -1013,7 +1014,6 @@
         function startGame() {
             document.getElementById('gameContainer').classList.remove('hidden');
             
-            // Make sure canvas is sized correctly
             resizeCanvas();
             
             gameState.gameRunning = true;
@@ -1022,7 +1022,6 @@
             gameState.speedMultiplier = 1;
             gameState.particles = [];
             
-            // Reset UI
             document.getElementById('currentScore').textContent = '0';
             document.getElementById('bestScore').textContent = gameState.bestScore;
             document.querySelectorAll('.life').forEach(life => life.classList.remove('lost'));
