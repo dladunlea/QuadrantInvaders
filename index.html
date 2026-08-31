@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=3.0, user-scalable=yes">
     <title>Quadrant Invaders</title>
     <style>
         * {
@@ -11,28 +11,37 @@
             box-sizing: border-box;
         }
 
+        html {
+            width: 100%;
+            height: 100%;
+        }
+
         body {
             font-family: 'Arial', sans-serif;
             background: #000;
             color: #fff;
-            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            padding: 40px 10px;
         }
 
         #gameContainer {
             display: flex;
             gap: 20px;
             max-width: 1200px;
-            padding: 20px;
+            width: 100%;
+            padding: 5px;
+            max-height: calc(100vh - 80px);
         }
 
         #gameArea {
             position: relative;
-            width: 600px;
-            height: 600px;
+            flex: 1;
+            min-width: 0;
+            aspect-ratio: 1;
+            max-height: 100%;
             background: radial-gradient(ellipse at center, #1a1a2e 0%, #000 100%);
             border: 2px solid #4a4a6a;
             border-radius: 10px;
@@ -62,13 +71,18 @@
             position: absolute;
             top: 0;
             left: 0;
+            width: 100%;
+            height: 100%;
         }
 
         #controlPanel {
+            flex: 0 0 auto;
             width: 300px;
+            max-height: 100%;
             display: flex;
             flex-direction: column;
             gap: 20px;
+            overflow-y: auto;
         }
 
         .panel-section {
@@ -76,6 +90,7 @@
             border: 2px solid #4a4a6a;
             border-radius: 10px;
             padding: 20px;
+            flex-shrink: 0;
         }
 
         .section-title {
@@ -169,6 +184,7 @@
             cursor: pointer;
             transition: all 0.2s;
             text-transform: uppercase;
+            touch-action: manipulation;
         }
 
         .answer-btn.positive {
@@ -214,10 +230,11 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            padding: 60px 20px;
         }
 
         .game-title {
-            font-size: 60px;
+            font-size: clamp(40px, 8vw, 60px);
             font-weight: bold;
             margin-bottom: 40px;
             text-align: center;
@@ -235,7 +252,7 @@
 
         .start-btn, .play-again-btn {
             padding: 20px 50px;
-            font-size: 28px;
+            font-size: clamp(20px, 4vw, 28px);
             font-weight: bold;
             background: linear-gradient(45deg, #00ffff, #0099ff);
             border: none;
@@ -244,6 +261,7 @@
             cursor: pointer;
             transition: all 0.3s;
             box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            touch-action: manipulation;
         }
 
         .start-btn:hover, .play-again-btn:hover {
@@ -256,7 +274,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 120px;
+            font-size: clamp(60px, 15vw, 120px);
             font-weight: bold;
             color: #00ffff;
             text-shadow: 0 0 30px #00ffff;
@@ -270,7 +288,7 @@
         }
 
         .final-score {
-            font-size: 36px;
+            font-size: clamp(24px, 5vw, 36px);
             margin: 20px 0;
             color: #00ff00;
         }
@@ -288,22 +306,183 @@
             animation: flashRed 0.3s;
         }
 
-        @media (max-width: 968px) {
+        /* Mobile Portrait */
+        @media (max-width: 768px) and (orientation: portrait) {
+            body {
+                padding: 30px 10px;
+            }
+
             #gameContainer {
                 flex-direction: column;
-                align-items: center;
+                gap: 10px;
+                max-height: calc(100vh - 60px);
             }
             
             #gameArea {
-                width: 90vw;
-                height: 90vw;
-                max-width: 500px;
-                max-height: 500px;
+                width: 100%;
             }
             
             #controlPanel {
-                width: 90vw;
-                max-width: 500px;
+                width: 100%;
+                gap: 10px;
+                max-height: 50vh;
+            }
+
+            .panel-section {
+                padding: 12px;
+            }
+
+            .section-title {
+                font-size: 16px;
+                margin-bottom: 10px;
+            }
+
+            .life {
+                width: 25px;
+                height: 25px;
+            }
+
+            .score-value {
+                font-size: 24px;
+            }
+
+            .score-label {
+                font-size: 12px;
+            }
+
+            #questionText {
+                font-size: 16px;
+                min-height: 50px;
+            }
+
+            .answer-btn {
+                padding: 12px;
+                font-size: 18px;
+            }
+        }
+
+        /* Mobile Landscape */
+        @media (max-width: 900px) and (orientation: landscape) {
+            body {
+                padding: 20px 10px;
+            }
+
+            #gameContainer {
+                gap: 10px;
+                max-height: calc(100vh - 40px);
+            }
+
+            #controlPanel {
+                width: 220px;
+                gap: 8px;
+            }
+
+            .panel-section {
+                padding: 10px;
+            }
+
+            .section-title {
+                font-size: 14px;
+                margin-bottom: 8px;
+            }
+
+            .life {
+                width: 22px;
+                height: 22px;
+                gap: 10px;
+            }
+
+            #livesContainer {
+                gap: 10px;
+            }
+
+            .score-value {
+                font-size: 22px;
+            }
+
+            .score-label {
+                font-size: 11px;
+            }
+
+            .score-item {
+                margin: 6px 0;
+            }
+
+            #questionText {
+                font-size: 14px;
+                margin-bottom: 12px;
+                min-height: 45px;
+            }
+
+            .axis-highlight {
+                font-size: 18px;
+            }
+
+            .answer-btn {
+                padding: 10px;
+                font-size: 16px;
+                margin: 5px 0;
+            }
+        }
+
+        /* Tablets */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            body {
+                padding: 30px 15px;
+            }
+
+            #gameContainer {
+                max-height: calc(100vh - 60px);
+            }
+        }
+
+        /* Very short screens */
+        @media (max-height: 700px) {
+            body {
+                padding: 20px 10px;
+            }
+
+            #gameContainer {
+                max-height: calc(100vh - 40px);
+            }
+
+            .panel-section {
+                padding: 10px;
+            }
+
+            .section-title {
+                font-size: 14px;
+                margin-bottom: 8px;
+            }
+
+            .life {
+                width: 22px;
+                height: 22px;
+            }
+
+            .score-value {
+                font-size: 22px;
+            }
+
+            #questionText {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+
+            .answer-btn {
+                padding: 10px;
+                font-size: 16px;
+            }
+        }
+
+        /* Extra short landscape */
+        @media (max-height: 600px) and (orientation: landscape) {
+            body {
+                padding: 15px 10px;
+            }
+
+            #gameContainer {
+                max-height: calc(100vh - 30px);
             }
         }
     </style>
@@ -371,8 +550,9 @@
         
         // Set canvas size
         function resizeCanvas() {
-            canvas.width = gameArea.clientWidth;
-            canvas.height = gameArea.clientHeight;
+            const rect = gameArea.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
         }
         resizeCanvas();
         
@@ -765,7 +945,7 @@
             gameState.animationId = requestAnimationFrame(gameLoop);
         }
 
-        // Start countdown - FIXED
+        // Start countdown
         function startCountdown() {
             document.getElementById('titleScreen').classList.add('hidden');
             
