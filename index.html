@@ -982,7 +982,7 @@
             gameState.animationId = requestAnimationFrame(gameLoop);
         }
 
-        // Start countdown
+        // Start countdown - FIXED
         function startCountdown() {
             document.getElementById('titleScreen').classList.add('hidden');
             
@@ -994,12 +994,7 @@
             function showCount() {
                 if (count > 0) {
                     countdownEl.textContent = count;
-                    countdownEl.style.animation = 'none';
-                    requestAnimationFrame(() => {
-                        requestAnimationFrame(() => {
-                            countdownEl.style.animation = 'countdownPulse 1s';
-                        });
-                    });
+                    countdownEl.style.animation = 'countdownPulse 1s';
                     count--;
                     setTimeout(showCount, 1000);
                 } else {
