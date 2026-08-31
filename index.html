@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadrant Invaders</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #gameContainer {
+            display: flex;
+            gap: 20px;
+            max-width: 1200px;
+            padding: 20px;
+        }
+
+        #gameArea {
+            position: relative;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(ellipse at center, #1a1a2e 0%, #000 100%);
+            border: 2px solid #4a4a6a;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #stars {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #controlPanel {
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel-section {
+            background: rgba(26, 26, 46, 0.8);
+            border: 2px solid #4a4a6a;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        #livesContainer {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .life {
+            width: 30px;
+            height: 30px;
+            background: #ff3366;
+            border-radius: 50%;
+            box-shadow: 0 0 15px #ff3366;
+            transition: all 0.3s;
+        }
+
+        .life.lost {
+            background: #333;
+            box-shadow: none;
+        }
+
+        #scoreDisplay {
+            text-align: center;
+        }
+
+        .score-item {
+            margin: 10px 0;
+            font-size: 20px;
+        }
+
+        .score-label {
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        .score-value {
+            color: #00ff00;
+            font-size: 28px;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        #questionSection {
+            text-align: center;
+        }
+
+        #questionText {
+            font-size: 18px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            min-height: 60px;
+        }
+
+        .axis-highlight {
+            font-weight: bold;
+            font-size: 22px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .x-highlight {
+            color: #00ffff;
+            background: rgba(0, 255, 255, 0.2);
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        .y-highlight {
+            color: #ff3366;
+            background: rgba(255, 51, 102, 0.2);
+            text-shadow: 0 0 10px #ff3366;
+        }
+
+        .answer-btn {
+            width: 100%;
+            padding: 15px;
+            margin: 8px 0;
+            font-size: 20px;
+            font-weight: bold;
+            border: 3px solid;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .answer-btn.positive {
+            background: rgba(0, 255, 0, 0.2);
+            border-color: #00ff00;
+            color: #00ff00;
+        }
+
+        .answer-btn.negative {
+            background: rgba(255, 100, 0, 0.2);
+            border-color: #ff6400;
+            color: #ff6400;
+        }
+
+        .answer-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px currentColor;
+        }
+
+        .answer-btn:active {
+            transform: scale(0.95);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .shake {
+            animation: shake 0.3s;
+        }
+
+        #titleScreen, #gameOverScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .game-title {
+            font-size: 60px;
+            font-weight: bold;
+            margin-bottom: 40px;
+            text-align: center;
+            background: linear-gradient(45deg, #00ffff, #ff3366, #00ff00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 2s infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.5); }
+        }
+
+        .start-btn, .play-again-btn {
+            padding: 20px 50px;
+            font-size: 28px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #00ffff, #0099ff);
+            border: none;
+            border-radius: 10px;
+            color: #000;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+        }
+
+        .start-btn:hover, .play-again-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.8);
+        }
+
+        #countdown {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 120px;
+            font-weight: bold;
+            color: #00ffff;
+            text-shadow: 0 0 30px #00ffff;
+            z-index: 999;
+        }
+
+        @keyframes countdownPulse {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .final-score {
+            font-size: 36px;
+            margin: 20px 0;
+            color: #00ff00;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @keyframes flashRed {
+            0%, 100% { background: radial-gradient(ellipse at center, #1a1a2e 0%, #000 100%); }
+            50% { background: radial-gradient(ellipse at center, #4a0000 0%, #000 100%); }
+        }
+
+        .flash-red {
+            animation: flashRed 0.3s;
+        }
+
+        @media (max-width: 968px) {
+            #gameContainer {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            #gameArea {
+                width: 90vw;
+                height: 90vw;
+                max-width: 500px;
+                max-height: 500px;
+            }
+            
+            #controlPanel {
+                width: 90vw;
+                max-width: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="titleScreen">
+        <div class="game-title">QUADRANT<br>INVADERS</div>
+        <button class="start-btn" onclick="startCountdown()">START GAME</button>
+    </div>
+
+    <div id="gameOverScreen" class="hidden">
+        <div class="game-title">GAME OVER</div>
+        <div class="final-score">
+            <div>Final Score: <span id="finalScore">0</span></div>
+            <div style="margin-top: 10px; color: #ffd700;">Best Score: <span id="finalBestScore">0</span></div>
+        </div>
+        <button class="play-again-btn" onclick="resetGame()">PLAY AGAIN</button>
+    </div>
+
+    <div id="gameContainer" class="hidden">
+        <div id="gameArea">
+            <div id="stars"></div>
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <div id="controlPanel">
+            <div class="panel-section">
+                <div class="section-title">LIVES</div>
+                <div id="livesContainer">
+                    <div class="life"></div>
+                    <div class="life"></div>
+                    <div class="life"></div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="section-title">SCORE</div>
+                <div id="scoreDisplay">
+                    <div class="score-item">
+                        <div class="score-label">Current</div>
+                        <div class="score-value" id="currentScore">0</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Best</div>
+                        <div class="score-value" id="bestScore">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="section-title">QUESTION</div>
+                <div id="questionSection">
+                    <div id="questionText">Get ready...</div>
+                    <button class="answer-btn positive" onclick="answerQuestion(true)">POSITIVE (+)</button>
+                    <button class="answer-btn negative" onclick="answerQuestion(false)">NEGATIVE (−)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const gameArea = document.getElementById('gameArea');
+        
+        // Set canvas size
+        function resizeCanvas() {
+            canvas.width = gameArea.clientWidth;
+            canvas.height = gameArea.clientHeight;
+        }
+        resizeCanvas();
+        
+        // Add resize listener that works during gameplay
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            // Redraw immediately if game is running
+            if (gameState.gameRunning) {
+                drawFrame();
+            }
+        });
+
+        // Game state
+        let gameState = {
+            lives: 3,
+            score: 0,
+            bestScore: localStorage.getItem('bestScore') || 0,
+            meteor: null,
+            currentAxis: null,
+            correctAnswer: null,
+            baseSpeed: 0.8,
+            speedMultiplier: 1,
+            particles: [],
+            animationId: null,
+            gameRunning: false
+        };
+
+        // Create stars
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            starsContainer.innerHTML = '';
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = star.style.height = (Math.random() * 2 + 1) + 'px';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+        createStars();
+
+        // Meteor class
+        class Meteor {
+            constructor() {
+                this.size = 20;
+                this.rotation = 0;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.1;
+                
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                const margin = 80;
+                
+                // Random spawn from edges, but ensure it travels THROUGH the grid
+                const side = Math.floor(Math.random() * 4);
+                
+                switch(side) {
+                    case 0: // top
+                        this.x = Math.random() * (canvas.width - 2 * margin) + margin;
+                        this.y = -50;
+                        this.vx = (Math.random() - 0.5) * 1.5;
+                        this.vy = 2;
+                        break;
+                    case 1: // right
+                        this.x = canvas.width + 50;
+                        this.y = Math.random() * (canvas.height - 2 * margin) + margin;
+                        this.vx = -2;
+                        this.vy = (Math.random() - 0.5) * 1.5;
+                        break;
+                    case 2: // bottom
+                        this.x = Math.random() * (canvas.width - 2 * margin) + margin;
+                        this.y = canvas.height + 50;
+                        this.vx = (Math.random() - 0.5) * 1.5;
+                        this.vy = -2;
+                        break;
+                    case 3: // left
+                        this.x = -50;
+                        this.y = Math.random() * (canvas.height - 2 * margin) + margin;
+                        this.vx = 2;
+                        this.vy = (Math.random() - 0.5) * 1.5;
+                        break;
+                }
+                
+                this.trail = [];
+            }
+
+            update() {
+                this.x += this.vx * gameState.baseSpeed * gameState.speedMultiplier;
+                this.y += this.vy * gameState.baseSpeed * gameState.speedMultiplier;
+                this.rotation += this.rotationSpeed;
+                
+                // Add trail
+                this.trail.push({x: this.x, y: this.y});
+                if (this.trail.length > 15) this.trail.shift();
+            }
+
+            draw() {
+                // Draw trail
+                ctx.globalAlpha = 0.3;
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const alpha = i / this.trail.length;
+                    ctx.globalAlpha = alpha * 0.5;
+                    ctx.fillStyle = '#ff6600';
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, this.size * alpha, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+
+                // Draw meteor
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                
+                // Meteor body
+                ctx.fillStyle = '#8B4513';
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Craters
+                ctx.fillStyle = '#654321';
+                ctx.beginPath();
+                ctx.arc(-5, -5, 5, 0, Math.PI * 2);
+                ctx.arc(6, 3, 4, 0, Math.PI * 2);
+                ctx.arc(-3, 7, 3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Glow
+                ctx.strokeStyle = '#ff6600';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size + 2, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                ctx.restore();
+            }
+
+            isOffScreen() {
+                return this.x < -100 || this.x > canvas.width + 100 ||
+                       this.y < -100 || this.y > canvas.height + 100;
+            }
+
+            getCoordinates() {
+                // Convert canvas coordinates to grid coordinates
+                const gridX = this.x - canvas.width / 2;
+                const gridY = canvas.height / 2 - this.y;
+                return { x: gridX, y: gridY };
+            }
+        }
+
+        // Particle class for explosions
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 8;
+                this.vy = (Math.random() - 0.5) * 8;
+                this.gravity = 0.2;
+                this.life = 1;
+                this.size = Math.random() * 4 + 2;
+                this.color = ['#ff6600', '#ff9900', '#ffcc00'][Math.floor(Math.random() * 3)];
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.life -= 0.02;
+            }
+
+            draw() {
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0;
+            }
+        }
+
+        // Draw coordinate grid
+        function drawGrid() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const gridSize = 40;
+
+            ctx.strokeStyle = 'rgba(100, 100, 150, 0.3)';
+            ctx.lineWidth = 1;
+
+            // Vertical lines
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+
+            // Horizontal lines
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            // Y-axis (vertical, red)
+            ctx.strokeStyle = '#ff3366';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, canvas.height);
+            ctx.stroke();
+
+            // X-axis (horizontal, cyan)
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(canvas.width, centerY);
+            ctx.stroke();
+
+            // Axis labels
+            ctx.font = 'bold 24px Arial';
+            ctx.fillStyle = '#00ffff';
+            ctx.shadowColor = '#00ffff';
+            ctx.shadowBlur = 10;
+            ctx.fillText('X', canvas.width - 30, centerY - 10);
+            
+            ctx.fillStyle = '#ff3366';
+            ctx.shadowColor = '#ff3366';
+            ctx.fillText('Y', centerX + 10, 30);
+            ctx.shadowBlur = 0;
+
+            // Origin point (spaceship)
+            ctx.fillStyle = '#00ff00';
+            ctx.shadowColor = '#00ff00';
+            ctx.shadowBlur = 15;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY - 15);
+            ctx.lineTo(centerX - 10, centerY + 10);
+            ctx.lineTo(centerX, centerY + 5);
+            ctx.lineTo(centerX + 10, centerY + 10);
+            ctx.closePath();
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+
+        // Update question
+        function updateQuestion() {
+            if (!gameState.meteor) return;
+
+            const coords = gameState.meteor.getCoordinates();
+            
+            // Randomly pick which axis to ask about
+            gameState.currentAxis = Math.random() < 0.5 ? 'x' : 'y';
+            
+            const value = gameState.currentAxis === 'x' ? coords.x : coords.y;
+            gameState.correctAnswer = value > 0;
+
+            const axisName = gameState.currentAxis.toUpperCase();
+            const axisClass = gameState.currentAxis === 'x' ? 'x-highlight' : 'y-highlight';
+            
+            document.getElementById('questionText').innerHTML = 
+                `Is the <span class="axis-highlight ${axisClass}">${axisName}</span>-coordinate of the meteor<br>positive or negative?`;
+        }
+
+        // Create explosion
+        function createExplosion(x, y) {
+            for (let i = 0; i < 30; i++) {
+                gameState.particles.push(new Particle(x, y));
+            }
+        }
+
+        // Spawn new meteor
+        function spawnMeteor() {
+            gameState.meteor = new Meteor();
+            updateQuestion();
+        }
+
+        // Answer question
+        function answerQuestion(isPositive) {
+            if (!gameState.gameRunning || !gameState.meteor) return;
+
+            // Get current coordinates
+            const coords = gameState.meteor.getCoordinates();
+            const value = gameState.currentAxis === 'x' ? coords.x : coords.y;
+            const correctAnswer = value > 0;
+
+            const buttons = document.querySelectorAll('.answer-btn');
+            
+            if (isPositive === correctAnswer) {
+                // Correct answer - reduced speed increase from 1.15 to 1.05
+                gameState.score += 10;
+                gameState.speedMultiplier *= 1.05;
+                document.getElementById('currentScore').textContent = gameState.score;
+                
+                // Update best score
+                if (gameState.score > gameState.bestScore) {
+                    gameState.bestScore = gameState.score;
+                    localStorage.setItem('bestScore', gameState.bestScore);
+                    document.getElementById('bestScore').textContent = gameState.bestScore;
+                }
+                
+                // Explosion
+                createExplosion(gameState.meteor.x, gameState.meteor.y);
+                
+                // Spawn new meteor after delay
+                gameState.meteor = null;
+                setTimeout(() => {
+                    if (gameState.gameRunning) spawnMeteor();
+                }, 500);
+                
+            } else {
+                // Wrong answer
+                loseLife();
+                buttons.forEach(btn => btn.classList.add('shake'));
+                setTimeout(() => buttons.forEach(btn => btn.classList.remove('shake')), 300);
+                
+                gameArea.classList.add('flash-red');
+                setTimeout(() => gameArea.classList.remove('flash-red'), 300);
+                
+                gameState.meteor = null;
+                setTimeout(() => {
+                    if (gameState.gameRunning) spawnMeteor();
+                }, 500);
+            }
+        }
+
+        // Lose a life
+        function loseLife() {
+            gameState.lives--;
+            const lifeElements = document.querySelectorAll('.life');
+            lifeElements[gameState.lives].classList.add('lost');
+            
+            if (gameState.lives <= 0) {
+                endGame();
+            }
+        }
+
+        // Draw a single frame (for resize events)
+        function drawFrame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawGrid();
+
+            if (gameState.meteor) {
+                gameState.meteor.draw();
+            }
+
+            gameState.particles.forEach(p => p.draw());
+        }
+
+        // Game loop
+        function gameLoop() {
+            if (!gameState.gameRunning) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawGrid();
+
+            // Update and draw meteor
+            if (gameState.meteor) {
+                gameState.meteor.update();
+                gameState.meteor.draw();
+
+                // Check if meteor escaped
+                if (gameState.meteor.isOffScreen()) {
+                    loseLife();
+                    gameArea.classList.add('flash-red');
+                    setTimeout(() => gameArea.classList.remove('flash-red'), 300);
+                    gameState.meteor = null;
+                    setTimeout(() => {
+                        if (gameState.gameRunning) spawnMeteor();
+                    }, 500);
+                }
+            }
+
+            // Update and draw particles
+            gameState.particles = gameState.particles.filter(p => {
+                p.update();
+                p.draw();
+                return !p.isDead();
+            });
+
+            gameState.animationId = requestAnimationFrame(gameLoop);
+        }
+
+        // Start countdown - FIXED
+        function startCountdown() {
+            document.getElementById('titleScreen').classList.add('hidden');
+            
+            let count = 3;
+            const countdownEl = document.createElement('div');
+            countdownEl.id = 'countdown';
+            document.body.appendChild(countdownEl);
+            
+            function showCount() {
+                if (count > 0) {
+                    countdownEl.textContent = count;
+                    // Force reflow to restart animation
+                    countdownEl.style.animation = 'none';
+                    // Use requestAnimationFrame to ensure the browser processes the style change
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            countdownEl.style.animation = 'countdownPulse 1s';
+                        });
+                    });
+                    count--;
+                    setTimeout(showCount, 1000);
+                } else {
+                    countdownEl.remove();
+                    startGame();
+                }
+            }
+            showCount();
+        }
+
+        // Start game
+        function startGame() {
+            document.getElementById('gameContainer').classList.remove('hidden');
+            
+            // Make sure canvas is sized correctly
+            resizeCanvas();
+            
+            gameState.gameRunning = true;
+            gameState.lives = 3;
+            gameState.score = 0;
+            gameState.speedMultiplier = 1;
+            gameState.particles = [];
+            
+            // Reset UI
+            document.getElementById('currentScore').textContent = '0';
+            document.getElementById('bestScore').textContent = gameState.bestScore;
+            document.querySelectorAll('.life').forEach(life => life.classList.remove('lost'));
+            
+            spawnMeteor();
+            gameLoop();
+        }
+
+        // End game
+        function endGame() {
+            gameState.gameRunning = false;
+            if (gameState.animationId) {
+                cancelAnimationFrame(gameState.animationId);
+            }
+            
+            document.getElementById('finalScore').textContent = gameState.score;
+            document.getElementById('finalBestScore').textContent = gameState.bestScore;
+            document.getElementById('gameOverScreen').classList.remove('hidden');
+        }
+
+        // Reset game
+        function resetGame() {
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            document.getElementById('gameContainer').classList.add('hidden');
+            document.getElementById('titleScreen').classList.remove('hidden');
+        }
+
+        // Initialize best score display
+        document.getElementById('bestScore').textContent = gameState.bestScore;
+    </script>
+</body>
+</html>
