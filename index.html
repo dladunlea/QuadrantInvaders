@@ -982,7 +982,7 @@
             gameState.animationId = requestAnimationFrame(gameLoop);
         }
 
-        // Start countdown - FIXED
+        // Start countdown - FIXED WITH PULSING ANIMATION
         function startCountdown() {
             document.getElementById('titleScreen').classList.add('hidden');
             
@@ -994,7 +994,12 @@
             function showCount() {
                 if (count > 0) {
                     countdownEl.textContent = count;
-                    countdownEl.style.animation = 'countdownPulse 1s';
+                    // Force reflow to restart animation
+                    void countdownEl.offsetWidth;
+                    countdownEl.style.animation = 'none';
+                    setTimeout(() => {
+                        countdownEl.style.animation = 'countdownPulse 1s';
+                    }, 10);
                     count--;
                     setTimeout(showCount, 1000);
                 } else {
